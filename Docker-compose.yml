@@ -1,0 +1,139 @@
+services:
+
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: drive_db
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  eureka:
+    build:
+      context: ./Eureka-Service/Eureka
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    environment:
+      SERVER_PORT: 8761
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: ./authService/authService
+    container_name: auth-service
+    depends_on:
+      - postgres
+      - eureka
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: 8085
+      DB_URL: jdbc:postgresql://postgres:5432/drive_db
+      EUREKA_SERVER_URL: http://eureka:8761/eureka/
+    ports:
+      - "8085:8085"
+    restart: unless-stopped
+
+  file-service:
+    build:
+      context: ./fileService/fileService
+    container_name: file-service
+    depends_on:
+      - postgres
+      - eureka
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://postgres:5432/drive_db
+      EUREKA_SERVER_URL: http://eureka:8761/eureka/
+    ports:
+      - "8081:8081"
+    volumes:
+      - uploads:/app/uploads
+    restart: unless-stopped
+
+  folder-service:
+    build:
+      context: ./folderService/folderService
+    container_name: folder-service
+    depends_on:
+      - postgres
+      - eureka
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: 8082
+      DB_URL: jdbc:postgresql://postgres:5432/drive_db
+      EUREKA_SERVER_URL: http://eureka:8761/eureka/
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+
+  search-service:
+    build:
+      context: ./searchService/searchService
+    container_name: search-service
+    depends_on:
+      - file-service
+      - folder-service
+      - eureka
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: 8083
+      EUREKA_SERVER_URL: http://eureka:8761/eureka/
+    ports:
+      - "8083:8083"
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      context: ./aiService/aiService
+    container_name: ai-service
+    depends_on:
+      - postgres
+      - eureka
+      - file-service
+      - folder-service
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: 8084
+      DB_URL: jdbc:postgresql://postgres:5432/drive_db
+      FILE_SERVICE_URL: http://file-service:8081/api
+      FOLDER_SERVICE_URL: http://folder-service:8082/api
+      EUREKA_SERVER_URL: http://eureka:8761/eureka/
+    ports:
+      - "8084:8084"
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./apiGateway/Api-Gateway
+    container_name: api-gateway
+    depends_on:
+      - auth-service
+      - file-service
+      - folder-service
+      - search-service
+      - ai-service
+      - eureka
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: 8080
+      EUREKA_SERVER_URL: http://eureka:8761/eureka/
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads:
