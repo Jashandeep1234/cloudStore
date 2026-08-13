@@ -58,7 +58,7 @@ export const MyDrive = () => {
   };
 
   const handleFileDownload = (file: FileNode) => {
-    downloadFile(file.id);
+    downloadFile(file.id, file.name);
   };
 
   /* ── Folder handlers ── */

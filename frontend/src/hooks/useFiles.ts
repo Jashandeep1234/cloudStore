@@ -68,14 +68,16 @@ export const useFileMutations = () => {
     },
   });
 
-  const downloadFile = (id: number) => {
-    const url = fileService.downloadFileUrl(id);
+  const downloadFile = async (id: number, name?: string) => {
+    const blob = await fileService.downloadFile(id);
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "");
+    link.setAttribute("download", name ?? `file-${id}`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   return {

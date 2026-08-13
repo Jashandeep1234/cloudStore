@@ -32,7 +32,7 @@ export const RecentPage = () => {
   };
 
   const handleFileDownload = (file: FileNode) => {
-    downloadFile(file.id);
+    downloadFile(file.id, file.name);
   };
 
   return (

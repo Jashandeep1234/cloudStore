@@ -18,6 +18,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AnalysisPanel } from "@/components/ai/AnalysisPanel";
 import { useAIMutations } from "@/hooks/useAI";
+import { fileService } from "@/services/fileService";
 import { toast } from "sonner";
 import type { AnalysisResult } from "@/types/ai";
 import {
@@ -77,9 +78,7 @@ export const FileCard = ({ file, onDownload, onDelete, onRename }: FileCardProps
 
   const handleAnalyze = async () => {
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "/api";
-      const downloadUrl = `${baseUrl}/files/download/${file.id}`;
-      const blob = await fetch(downloadUrl).then((r) => r.blob());
+      const blob = await fileService.downloadFile(file.id);
       const fileObj = new File([blob], file.name, { type: blob.type });
       const result = await analyzeFile({ file: fileObj });
       setAnalysisResult(result);

@@ -106,7 +106,7 @@ public class FileController {
                     restTemplate.exchange(folderServiceUrl, org.springframework.http.HttpMethod.GET,
                             requestEntity, Object.class);
                 } catch (Exception e) {
-                    System.out.println("❌ Folder validation failed: " + e.getMessage());
+                    System.out.println(" Folder validation failed: " + e.getMessage());
                     return ResponseEntity.badRequest().body(
                             Map.of(
                                     "success", false,

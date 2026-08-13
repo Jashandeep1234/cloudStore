@@ -53,7 +53,12 @@ export const fileService = {
   },
 
   // GET /api/files/download/{id}
-  downloadFileUrl: (id: number): string => {
-    return `${apiClient.defaults.baseURL}/files/download/${id}`;
+  // Returns the raw file bytes as a Blob. The request goes through apiClient,
+  // so the Bearer token is attached automatically by the interceptor.
+  downloadFile: async (id: number): Promise<Blob> => {
+    const response = await apiClient.get<Blob>(`/files/download/${id}`, {
+      responseType: "blob",
+    });
+    return response.data;
   },
 };

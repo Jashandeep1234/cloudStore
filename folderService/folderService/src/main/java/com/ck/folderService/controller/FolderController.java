@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -131,19 +132,26 @@ public class FolderController {
 
         try {
             Long userId = requireUserId(request);
-            FolderEntity folder = folderRepository.findByIdAndUserId(id, userId)
+            folderRepository.findByIdAndUserId(id, userId)
                     .orElseThrow(() ->
                             new RuntimeException("Folder not found"));
-            // Check child folders
-            if (folderRepository.existsByUserIdAndParentId(userId, id)) {
-                return Map.of("success", false, "error", "Folder contains subfolders");
-            }
 
-            folderRepository.delete(folder);
+            List<Long> idsToDelete = new ArrayList<>();
+            idsToDelete.add(id);
+            collectChildFolderIds(userId, id, idsToDelete);
+
+            folderRepository.deleteAllById(idsToDelete);
 
             return Map.of("success", true, "message", "Folder deleted successfully");
         } catch (Exception e) {
             return Map.of("success", false, "error", e.getMessage());
+        }
+    }
+
+    private void collectChildFolderIds(Long userId, Long parentId, List<Long> ids) {
+        for (FolderEntity child : folderRepository.findByUserIdAndParentId(userId, parentId)) {
+            ids.add(child.getId());
+            collectChildFolderIds(userId, child.getId(), ids);
         }
     }
 
