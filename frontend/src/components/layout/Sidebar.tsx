@@ -3,7 +3,6 @@ import {
   HardDrive,
   Clock,
   Search,
-  Trash2,
   UserRound,
   LayoutDashboard,
   Sparkles,

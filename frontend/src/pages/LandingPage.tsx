@@ -9,7 +9,6 @@ import {
   Folder,
   Zap,
   Cloud,
-  GitBranch,
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
