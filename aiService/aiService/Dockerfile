@@ -17,7 +17,7 @@ RUN chmod +x mvnw && ./mvnw -B -ntp dependency:go-offline
 COPY src ./src
 
 # Build application
-RUN ./mvnw -B -ntp clean package -DskipTests
+RUN ./mvnw -B -ntp clean package -Dmaven.test.skip=true
 
 # ==========================================
 # Runtime Stage
